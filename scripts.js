@@ -1,12 +1,12 @@
 // Global State
 const state = {
     service: 'one-time',
-    sqFt: 1300,
+    sqFt: 1500,
     beds: 2,
-    baths: 2,
+    baths: 1,
     freq: 'biweekly',
     addons: {},
-    calculatedTotal: 130
+    calculatedTotal: 350
 };
 
 const ADDONS = [
@@ -16,9 +16,8 @@ const ADDONS = [
     { id: 'dishes', name: 'Hand Wash Dishes', price: 20 }
 ];
 
-// App Initialization
 document.addEventListener('DOMContentLoaded', () => {
-    initTabs();
+    initServiceCards();
     initModalEvents();
     renderPanel();
     recalc();
@@ -35,17 +34,21 @@ function setMinDate() {
     }
 }
 
-function initTabs() {
-    const tabs = document.querySelectorAll('.tab');
-    tabs.forEach(tab => {
-        tab.addEventListener('click', (e) => {
-            tabs.forEach(t => t.classList.remove('active'));
-            e.target.classList.add('active');
+function initServiceCards() {
+    const cards = document.querySelectorAll('.service-select-card');
+    cards.forEach(card => {
+        card.addEventListener('click', (e) => {
+            cards.forEach(c => c.classList.remove('active'));
+            const target = e.currentTarget;
+            target.classList.add('active');
             
-            state.service = e.target.dataset.service;
+            state.service = target.dataset.service;
             state.addons = {};
+
             renderPanel();
             recalc();
+
+            document.getElementById('calculator-anchor')?.scrollIntoView({ behavior: 'smooth' });
         });
     });
 }
@@ -60,19 +63,19 @@ function renderPanel() {
         html += `
             <div class="field">
                 <label>Home Size: <strong id="sqFtValue">${state.sqFt} sq ft</strong></label>
-                <input type="range" id="sqFtSlider" min="600" max="4000" step="100" value="${state.sqFt}" aria-label="Home size in square feet">
+                <input type="range" id="sqFtSlider" min="1000" max="4000" step="250" value="${state.sqFt}">
             </div>
             <div style="display:flex; gap:10px;">
                 <div class="field" style="flex:1;">
-                    <label>Beds</label>
+                    <label>Bedrooms</label>
                     <select id="bedSelect">
-                        ${[1,2,3,4,5].map(n => `<option value="${n}" ${state.beds == n ? 'selected' : ''}>${n}</option>`).join('')}
+                        ${[1,2,3,4,5].map(n => `<option value="${n}" ${state.beds == n ? 'selected' : ''}>${n} Bed${n > 1 ? 's' : ''}</option>`).join('')}
                     </select>
                 </div>
                 <div class="field" style="flex:1;">
-                    <label>Baths</label>
+                    <label>Bathrooms (+$50 / extra bath)</label>
                     <select id="bathSelect">
-                        ${[1,2,3].map(n => `<option value="${n}" ${state.baths == n ? 'selected' : ''}>${n}</option>`).join('')}
+                        ${[1,2,3,4].map(n => `<option value="${n}" ${state.baths == n ? 'selected' : ''}>${n} Bath${n > 1 ? 's' : ''}</option>`).join('')}
                     </select>
                 </div>
             </div>
@@ -97,17 +100,30 @@ function renderPanel() {
             <div class="field">
                 <label>Property Layout</label>
                 <select id="strLayout">
-                    <option value="100">1 Bed / 1 Bath ($100)</option>
-                    <option value="130" selected>2 Bed / 2 Bath ($130)</option>
-                    <option value="175">3 Bed / 2 Bath ($175)</option>
-                    <option value="225">4+ Bed / 3+ Bath ($225)</option>
+                    <option value="120">1 Bed / 1 Bath ($120)</option>
+                    <option value="150" selected>2 Bed / 2 Bath ($150)</option>
+                    <option value="200">3 Bed / 2 Bath ($200)</option>
+                    <option value="250">4+ Bed / 3+ Bath ($250)</option>
                 </select>
             </div>
         `;
     }
 
-    html += `<h4 style="margin: 15px 0 5px 0; color: var(--primary-blue);">Select Add-ons:</h4>`;
+    const isDeepOrMove = (state.service === 'deep' || state.service === 'move');
+
+    html += `<h4 style="margin: 15px 0 5px 0; color: var(--primary-blue);">Add-ons / What's Included:</h4>`;
+    
+    if (isDeepOrMove) {
+        html += `
+            <div style="font-size: 0.85rem; background: var(--soft-cyan); color: var(--primary-blue); padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid var(--accent-teal);">
+                <strong>✨ All-Inclusive Cleaning:</strong> Inside Oven, Inside Refrigerator & Deep Scrubbing are <u>already included</u> in this package!
+            </div>
+        `;
+    }
+
     ADDONS.forEach(a => {
+        if (isDeepOrMove && (a.id === 'fridge' || a.id === 'oven')) return;
+
         const checked = state.addons[a.id] ? 'checked' : '';
         html += `
             <div class="addon-item">
@@ -157,22 +173,31 @@ function bindDynamicEvents() {
 }
 
 function recalc() {
-    let base = 130;
+    let base = 300;
     let discount = 0;
 
-    if (state.service === 'one-time' || state.service === 'recurrent') {
-        base = Math.max(state.sqFt * 0.10, 130);
+    // ТОЧНА ЛОГІКА ЗА ТАБЛИЦЕЮ ДЛЯ DEEP CLEANING
+    // 1000 sq ft = $300, кожні +250 sq ft = +$25
+    let deepBase1Bath = 300 + Math.floor((state.sqFt - 1000) / 250) * 25;
+
+    if (state.service === 'deep') {
+        base = deepBase1Bath;
+    } else if (state.service === 'move') {
+        base = deepBase1Bath + 50;
+    } else if (state.service === 'one-time' || state.service === 'recurrent') {
+        base = Math.round(deepBase1Bath * 0.55);
         if (state.service === 'recurrent') {
             let rate = state.freq === 'weekly' ? 0.20 : (state.freq === 'biweekly' ? 0.15 : 0.10);
             discount = base * rate;
         }
-    } else if (state.service === 'deep') {
-        base = Math.max(state.sqFt * 0.18, 200);
-    } else if (state.service === 'move') {
-        base = Math.max(state.sqFt * 0.20, 220);
     } else if (state.service === 'airbnb') {
         const select = document.getElementById('strLayout');
-        base = select ? parseInt(select.value) : 130;
+        base = select ? parseInt(select.value) : 150;
+    }
+
+    // Кожна додаткова ванна кімната додає +$50
+    if (state.service !== 'airbnb' && state.baths > 1) {
+        base += (state.baths - 1) * 50;
     }
 
     let addonsSum = Object.values(state.addons).reduce((a, b) => a + b, 0);
@@ -209,13 +234,11 @@ function initPaymentToggle() {
 
 function updateFormSummaryData() {
     const isOnline = document.getElementById('payOnlineRadio')?.checked;
-    const paymentNoticeText = isOnline 
-        ? "STATUS: ONLINE PAYMENT SELECTED" 
-        : "STATUS: PAY AT SERVICE";
+    const paymentNoticeText = isOnline ? "STATUS: ONLINE PAYMENT" : "STATUS: PAY AT SERVICE";
 
     const modalSummary = document.getElementById('modalBookingSummary');
     if (modalSummary) {
-        modalSummary.innerText = `Selected: ${state.service.toUpperCase()} (${state.sqFt} sq ft) | Total: $${state.calculatedTotal} | [${paymentNoticeText}]`;
+        modalSummary.innerText = `Selected: ${state.service.toUpperCase()} (${state.sqFt} sq ft, ${state.baths} Bath) | Total: $${state.calculatedTotal} | [${paymentNoticeText}]`;
     }
 }
 
@@ -251,7 +274,7 @@ function setupDemoFormSubmissions() {
         if (!form) return;
         form.addEventListener('submit', (e) => {
             e.preventDefault();
-            alert('DEMO MODE: Form submission successful!');
+            alert('DEMO MODE: Reservation Sent!');
             form.reset();
             closeModal(formId === 'bookingForm' ? 'bookingModal' : 'vipModal');
         });
