@@ -28,7 +28,7 @@
     <section class="hero">
         <div class="container hero-content">
             <h1>Olena's House Cleaning Service</h1>
-            <p>Reliable, detailed, and trusted cleaning tailored to your schedule.</p>
+            <p>Reliable, detailed, and trusted cleaning tailored to your schedule in Idaho.</p>
         </div>
     </section>
 
@@ -36,28 +36,24 @@
         
         <!-- Services Select Cards Grid -->
         <section class="services-select-section">
-            <h2 class="section-title">Services Offered</h2>
+            <h2 class="section-title">Select Service</h2>
             
             <div class="services-grid">
-                <div class="service-select-card active" data-service="one-time">
+                <div class="service-select-card active" data-service="standard">
                     <i class="fas fa-paint-brush service-icon"></i>
-                    <h3>One-Time<br>Cleaning</h3>
-                </div>
-                <div class="service-select-card" data-service="recurrent">
-                    <i class="fas fa-calendar-alt service-icon"></i>
-                    <h3>Twice a Month</h3>
-                </div>
-                <div class="service-select-card" data-service="move">
-                    <i class="fas fa-box-open service-icon"></i>
-                    <h3>Moving</h3>
+                    <h3>Standard<br>Cleaning</h3>
                 </div>
                 <div class="service-select-card" data-service="deep">
                     <i class="fas fa-spray-can service-icon"></i>
-                    <h3>Deep Cleaning</h3>
+                    <h3>Deep<br>Cleaning</h3>
+                </div>
+                <div class="service-select-card" data-service="move">
+                    <i class="fas fa-box-open service-icon"></i>
+                    <h3>Move-In /<br>Move-Out</h3>
                 </div>
                 <div class="service-select-card" data-service="airbnb">
                     <i class="fas fa-house-user service-icon"></i>
-                    <h3>Airbnb</h3>
+                    <h3>Airbnb /<br>STR Service</h3>
                 </div>
             </div>
         </section>
@@ -75,10 +71,16 @@
                     <div>
                         <h3>Booking Summary</h3>
                         <hr style="margin: 12px 0; border: none; border-top: 1px solid rgba(27, 59, 82, 0.15);">
-                        <div class="sum-line"><span>Base Price:</span> <strong id="basePrice">$0</strong></div>
+                        <div class="sum-line"><span>Base Rate:</span> <strong id="basePrice">$130</strong></div>
+                        <div class="sum-line"><span>Extra Baths:</span> <strong id="bathsPrice">$0</strong></div>
                         <div class="sum-line"><span>Add-ons:</span> <strong id="addonsPrice">$0</strong></div>
                         <div class="sum-line" id="discountRow" style="display:none; color: var(--accent-teal);"><span>Discount:</span> <strong id="discountPrice">-$0</strong></div>
-                        <div class="sum-total"><span>Total:</span> <strong id="totalPrice">$350</strong></div>
+                        
+                        <div class="time-estimate-box">
+                            <i class="fas fa-clock"></i> Est. Time: <strong id="estimatedTime">2.5 hrs</strong>
+                        </div>
+
+                        <div class="sum-total"><span>Total:</span> <strong id="totalPrice">$130</strong></div>
                     </div>
                     
                     <div class="btn-book-wrapper">
@@ -92,8 +94,8 @@
         <div class="vip-card">
             <span class="vip-badge">VIP SUBSCRIPTION</span>
             <h3>🎁 Wife Care All-Inclusive Subscription</h3>
-            <p style="font-size: 0.9rem; margin-top: 5px;">A clean home, fresh flowers, and her favorite coffee automatically delivered on every clean.</p>
-            <button class="btn-vip" id="openVipBtn">Customize Wife Care Package -></button>
+            <p style="font-size: 0.9rem; margin-top: 5px;">A clean home, fresh flowers, and her favorite coffee automatically delivered on every clean (+ $35 care fee included).</p>
+            <button class="btn-vip" id="openVipBtn">Customize Wife Care Package &rarr;</button>
         </div>
 
         <!-- Connect Section -->
@@ -133,11 +135,12 @@
             </div>
         </section>
 
-        <!-- БЛОК ДЛЯ БУДУЩЕЙ ИНФОРМАЦИИ О НАС (ПОСЛЕ КОНТАКТОВ) -->
+        <!-- About Us -->
         <section style="margin: 2rem 0 3.5rem 0;">
             <div style="background: var(--card-bg); border: 2px dashed var(--accent-teal); border-radius: 20px; padding: 2.5rem 1.5rem; text-align: center; box-shadow: 0 8px 25px rgba(44, 104, 117, 0.08);">
                 <i class="fas fa-info-circle" style="font-size: 2.2rem; color: var(--accent-teal); margin-bottom: 0.8rem;"></i>
-                <h3 style="color: var(--primary-blue); font-size: 1.4rem; font-weight: 700;">Блок для будущей информации о нас</h3>
+                <h3 style="color: var(--primary-blue); font-size: 1.4rem; font-weight: 700;">About Olena's House Cleaning</h3>
+                <p style="color: var(--text-muted); margin-top: 8px;">Serving Boise, Meridian, Eagle, Nampa & Star, ID. Licensed, trusted, and meticulous house cleaning.</p>
             </div>
         </section>
 
@@ -147,7 +150,7 @@
     <div class="mobile-bar">
         <div>
             <div style="font-size: 0.75rem; color: #526e77;">Estimated Total:</div>
-            <strong id="mobileTotal" style="color: var(--primary-blue); font-size: 1.15rem;">$350</strong>
+            <strong id="mobileTotal" style="color: var(--primary-blue); font-size: 1.15rem;">$130</strong>
         </div>
         <button class="btn-book open-booking-btn" style="width: auto; padding: 8px 18px;">Book Now</button>
     </div>
@@ -162,7 +165,7 @@
             
             <div id="modalBookingSummary" style="background: var(--soft-cyan); padding: 10px 12px; border-radius: 8px; font-size: 0.82rem; margin-top: 12px; color: var(--primary-blue); font-weight: bold;"></div>
 
-            <form id="bookingForm" action="#" method="POST" style="margin-top: 15px;">
+            <form id="bookingForm" style="margin-top: 15px;">
                 <div class="field"><label>Full Name</label><input type="text" name="name" placeholder="John Doe" required></div>
                 <div class="field"><label>Phone</label><input type="tel" name="phone" placeholder="(208) 000-0000" required></div>
                 <div class="field"><label>Address</label><input type="text" name="address" placeholder="Street, City, Zip" required></div>
@@ -203,11 +206,14 @@
                 <h3 style="color: var(--primary-blue);">Wife Care Package</h3>
                 <span class="close-btn" data-modal="vipModal">✖</span>
             </div>
-            <form id="vipForm" action="#" method="POST" style="margin-top: 15px;">
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">
+                Includes fresh flowers, artisanal coffee delivery, and personal greeting card automatically added to your clean (+$35).
+            </p>
+            <form id="vipForm" style="margin-top: 15px;">
                 <div class="field"><label>Favorite Coffee/Drink</label><input type="text" name="coffee_preference" placeholder="e.g. Iced Vanilla Latte" required></div>
                 <div class="field"><label>Preferred Flowers</label><select name="flower_preference"><option>Seasonal Fresh Mix</option><option>Roses</option><option>Sunflowers</option></select></div>
                 <div class="field"><label>Frequency</label><select name="frequency"><option>Bi-Weekly</option><option>Weekly</option></select></div>
-                <button class="btn-vip" style="width:100%;" type="submit">Submit VIP Order</button>
+                <button class="btn-vip" style="width:100%;" type="submit">Enable Wife Care Subscription</button>
             </form>
         </div>
     </div>

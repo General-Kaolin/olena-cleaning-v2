@@ -223,6 +223,7 @@ a {
 
 .field input[type="text"],
 .field input[type="tel"],
+.field input[type="number"],
 .field input[type="date"],
 .field select {
     width: 100%;
@@ -246,6 +247,18 @@ a {
     padding: 10px 0;
     border-bottom: 1px solid rgba(64, 159, 181, 0.15);
     font-size: 0.9rem;
+}
+
+.time-estimate-box {
+    margin-top: 12px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 8px;
+    font-size: 0.88rem;
+    color: var(--primary-blue);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .sum-line {
