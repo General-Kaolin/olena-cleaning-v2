@@ -1,14 +1,15 @@
 // State structure conforming to Idaho Pricing Matrix & Client Specs
 const state = {
-    service: 'standard', // 'standard', 'deep', 'move', 'airbnb'
-    sqFt: 1000,
+    service: 'standard', // 'standard', 'deep', 'move', 'airbnb', 'closet'
+    sqFt: 1400,
     beds: 2,
     baths: 2,
+    closetHours: 1, // Часы для отдельной 5-й услуги Closet Organization ($50/час)
     freq: 'onetime', // 'onetime', 'weekly', 'biweekly', 'monthly'
     isWifeCareVip: false,
     addons: {},
     calculatedTotal: 130,
-    estimatedHours: 2.0
+    estimatedHours: 2.8
 };
 
 // Pricing config matrix according to TZ (Idaho Region Rates)
@@ -16,7 +17,8 @@ const PRICING_CONFIG = {
     standard: { rate: 0.12, minFee: 130 },
     deep: { rate: 0.225, minFee: 225 },
     move: { rate: 0.285, minFee: 285 },
-    airbnb: { rate: 0.15, minFee: 120 }
+    airbnb: { rate: 0.15, minFee: 120 },
+    closet: { rate: 0, minFee: 50 } // 5-я услуга: Closet Organization ($50/час)
 };
 
 const FREQ_DISCOUNTS = {
@@ -26,7 +28,7 @@ const FREQ_DISCOUNTS = {
     monthly: 0.10
 };
 
-// Add-ons prices aligned with updated specs & feedback
+// Add-ons list for Standard/Deep
 const ADDONS_CATALOG = [
     { id: 'fridge', name: 'Inside Fridge Cleaning', price: 35 },
     { id: 'oven', name: 'Inside Oven Cleaning', price: 45 },
@@ -78,83 +80,129 @@ function renderPanel() {
 
     let html = '';
 
-    if (state.service !== 'airbnb') {
+    // Если выбрана 5-я услуга "Closet Organization"
+    if (state.service === 'closet') {
         html += `
-            <div class="field">
-                <label>Home Area: <strong id="sqFtValue">${state.sqFt} sq. ft.</strong></label>
-                <input type="range" id="sqFtSlider" min="500" max="5000" step="50" value="${state.sqFt}">
+            <div class="service-inclusions-box" style="border-left-color: var(--accent-teal);">
+                <strong>👗 Closet Organization & Decluttering:</strong>
+                <ul>
+                    <li>Professional closet sorting, folding & hanging</li>
+                    <li>Seasonal clothing swap & space optimization</li>
+                    <li>Organization by color, type & priority</li>
+                </ul>
             </div>
-            <div style="display:flex; gap:10px;">
-                <div class="field" style="flex:1;">
-                    <label>Bedrooms</label>
-                    <select id="bedSelect">
-                        ${[1,2,3,4,5,6].map(n => `<option value="${n}" ${state.beds == n ? 'selected' : ''}>${n} Bed${n > 1 ? 's' : ''}</option>`).join('')}
-                    </select>
-                </div>
-                <div class="field" style="flex:1;">
-                    <label>Bathrooms</label>
-                    <select id="bathSelect">
-                        ${[1,1.5,2,2.5,3,3.5,4,5].map(n => `<option value="${n}" ${state.baths == n ? 'selected' : ''}>${n} Bath${n > 1 ? 's' : ''}</option>`).join('')}
-                    </select>
-                </div>
-            </div>
-        `;
-    }
-
-    if (state.service === 'standard') {
-        html += `
             <div class="field">
-                <label>Cleaning Frequency (Discounts)</label>
-                <select id="freqSelect">
-                    <option value="onetime" ${state.freq === 'onetime' ? 'selected' : ''}>One-Time (Full Price)</option>
-                    <option value="weekly" ${state.freq === 'weekly' ? 'selected' : ''}>Weekly (Save 20%)</option>
-                    <option value="biweekly" ${state.freq === 'biweekly' ? 'selected' : ''}>Bi-Weekly (Save 15%)</option>
-                    <option value="monthly" ${state.freq === 'monthly' ? 'selected' : ''}>Monthly (Save 10%)</option>
+                <label>Estimated Hours Needed: <strong id="closetHoursVal">${state.closetHours} hour(s) ($${state.closetHours * 50})</strong></label>
+                <select id="closetHoursSelect">
+                    ${[1, 2, 3, 4, 5, 6, 8].map(h => `<option value="${h}" ${state.closetHours == h ? 'selected' : ''}>${h} Hour${h > 1 ? 's' : ''} ($${h * 50})</option>`).join('')}
                 </select>
             </div>
         `;
+    } else {
+        // Стандартные услуги уборки
+        if (state.service !== 'airbnb') {
+            html += `
+                <div class="field">
+                    <label>Home Area: <strong id="sqFtValue">${state.sqFt} sq. ft.</strong></label>
+                    <input type="range" id="sqFtSlider" min="500" max="5000" step="50" value="${state.sqFt}">
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <div class="field" style="flex:1;">
+                        <label>Bedrooms</label>
+                        <select id="bedSelect">
+                            ${[1,2,3,4,5,6].map(n => `<option value="${n}" ${state.beds == n ? 'selected' : ''}>${n} Bed${n > 1 ? 's' : ''}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="field" style="flex:1;">
+                        <label>Bathrooms</label>
+                        <select id="bathSelect">
+                            ${[1,1.5,2,2.5,3,3.5,4,5].map(n => `<option value="${n}" ${state.baths == n ? 'selected' : ''}>${n} Bath${n > 1 ? 's' : ''}</option>`).join('')}
+                        </select>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (state.service === 'standard') {
+            html += `
+                <div class="field">
+                    <label>Cleaning Frequency (Discounts)</label>
+                    <select id="freqSelect">
+                        <option value="onetime" ${state.freq === 'onetime' ? 'selected' : ''}>One-Time (Full Price)</option>
+                        <option value="weekly" ${state.freq === 'weekly' ? 'selected' : ''}>Weekly (Save 20%)</option>
+                        <option value="biweekly" ${state.freq === 'biweekly' ? 'selected' : ''}>Bi-Weekly (Save 15%)</option>
+                        <option value="monthly" ${state.freq === 'monthly' ? 'selected' : ''}>Monthly (Save 10%)</option>
+                    </select>
+                </div>
+            `;
+        }
+
+        // Блоки описаний услуг (Inclusions)
+        if (state.service === 'standard') {
+            html += `
+                <div class="service-inclusions-box">
+                    <strong>🧹 Standard Cleaning Includes:</strong>
+                    <ul>
+                        <li>Dusting all surfaces, furniture & decor</li>
+                        <li>Wiping baseboards & window sills</li>
+                        <li>Vacuuming & mopping all floors</li>
+                        <li>Full kitchen cleaning (countertops, sink, exterior appliances)</li>
+                        <li>Complete bathrooms disinfection & sanitization</li>
+                    </ul>
+                </div>
+            `;
+        } else if (state.service === 'deep') {
+            html += `
+                <div class="service-inclusions-box">
+                    <strong>✨ Deep Cleaning Includes (All Standard + Detailed Scrub):</strong>
+                    <ul>
+                        <li>Thorough baseboards & door frames washing</li>
+                        <li>Detailed scrubbing of tile grout & bathroom fixtures</li>
+                        <li>High & low dusting (vents, light fixtures, corners)</li>
+                        <li>Thorough sanitization of all living areas & kitchen surfaces</li>
+                    </ul>
+                </div>
+            `;
+        } else if (state.service === 'move') {
+            html += `
+                <div class="service-inclusions-box" style="border-left-color: #2c6875;">
+                    <strong>📦 Move-In / Move-Out (All-Inclusive Package):</strong>
+                    <ul>
+                        <li><strong>Inside Cabinets & Drawers</strong> fully cleaned</li>
+                        <li><strong>Inside Oven & Inside Refrigerator</strong> included</li>
+                        <li>Deep scrubbing of empty rooms, baseboards & closets</li>
+                        <li>Complete sanitization ready for new residents or inspection</li>
+                    </ul>
+                </div>
+            `;
+        } else if (state.service === 'airbnb') {
+            html += `
+                <div class="service-inclusions-box">
+                    <strong>🏨 Airbnb / STR Turnkey Service:</strong>
+                    <ul>
+                        <li>Bed linen change & bed making</li>
+                        <li>Restocking essential supplies & guest amenities</li>
+                        <li>Thorough turnover cleaning & staging inspection</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        // Выводим аддоны только для Standard и Deep
+        if (state.service !== 'move' && state.service !== 'airbnb') {
+            html += `<h4 style="margin: 15px 0 5px 0; color: var(--primary-blue);">Select Extra Add-ons:</h4>`;
+
+            ADDONS_CATALOG.forEach(a => {
+                const checked = state.addons[a.id] ? 'checked' : '';
+                html += `
+                    <div class="addon-item">
+                        <span>${a.name} (+$${a.price})</span>
+                        <input type="checkbox" class="addon-check" data-id="${a.id}" data-price="${a.price}" ${checked}>
+                    </div>
+                `;
+            });
+        }
     }
-
-    if (state.service === 'airbnb') {
-        html += `
-            <div class="field">
-                <label>Property Size & Layout</label>
-                <select id="strLayout">
-                    <option value="120">1 Bed / 1 Bath ($120)</option>
-                    <option value="150" selected>2 Bed / 2 Bath ($150)</option>
-                    <option value="200">3 Bed / 2 Bath ($200)</option>
-                    <option value="250">4+ Bed / 3+ Bath ($250)</option>
-                </select>
-            </div>
-            <div style="font-size: 0.85rem; background: var(--soft-cyan); color: var(--primary-blue); padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid var(--accent-teal);">
-                <strong>✨ Included for Airbnb:</strong> Bed Linen Change & Turnkey Preparation are already included!
-            </div>
-        `;
-    }
-
-    // Notice for Move-Out
-    if (state.service === 'move') {
-        html += `
-            <div style="font-size: 0.85rem; background: var(--soft-cyan); color: var(--primary-blue); padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid var(--accent-teal);">
-                <strong>✨ Move-Out Package:</strong> Inside Cabinets & Deep Cleaning scrub are already <u>included</u>!
-            </div>
-        `;
-    }
-
-    html += `<h4 style="margin: 15px 0 5px 0; color: var(--primary-blue);">Select Extra Add-ons:</h4>`;
-
-    ADDONS_CATALOG.forEach(a => {
-        // Hide cabinets add-on for move-out as it is included
-        if (state.service === 'move' && a.id === 'cabinets') return;
-
-        const checked = state.addons[a.id] ? 'checked' : '';
-        html += `
-            <div class="addon-item">
-                <span>${a.name} (+$${a.price})</span>
-                <input type="checkbox" class="addon-check" data-id="${a.id}" data-price="${a.price}" ${checked}>
-            </div>
-        `;
-    });
 
     panel.innerHTML = html;
     bindDynamicEvents();
@@ -181,8 +229,15 @@ function bindDynamicEvents() {
     const freqSelect = document.getElementById('freqSelect');
     if (freqSelect) freqSelect.addEventListener('change', (e) => { state.freq = e.target.value; recalc(); });
 
-    const strLayout = document.getElementById('strLayout');
-    if (strLayout) strLayout.addEventListener('change', () => recalc());
+    const closetSelect = document.getElementById('closetHoursSelect');
+    if (closetSelect) {
+        closetSelect.addEventListener('change', (e) => {
+            state.closetHours = parseInt(e.target.value);
+            const valEl = document.getElementById('closetHoursVal');
+            if (valEl) valEl.innerText = `${state.closetHours} hour(s) ($${state.closetHours * 50})`;
+            recalc();
+        });
+    }
 
     document.querySelectorAll('.addon-check').forEach(chk => {
         chk.addEventListener('change', (e) => {
@@ -196,44 +251,52 @@ function bindDynamicEvents() {
 }
 
 function recalc() {
-    const cfg = PRICING_CONFIG[state.service] || PRICING_CONFIG.standard;
+    const bathsRow = document.getElementById('bathsRow');
+    const addonsRow = document.getElementById('addonsRow');
     
-    // Step 1: Base calculation with Minimum threshold
-    let rawCost = state.sqFt * cfg.rate;
-    let baseCost = Math.max(rawCost, cfg.minFee);
-
-    if (state.service === 'airbnb') {
-        const select = document.getElementById('strLayout');
-        baseCost = select ? parseInt(select.value) : 150;
-    }
-
-    // Step 2: Extra Bathrooms surcharge (+$25 for baths > 2.5 or > 2)
+    let baseCost = 0;
     let extraBathCost = 0;
-    if (state.service !== 'airbnb' && state.baths > 2) {
-        extraBathCost = (state.baths - 2) * 25;
-    }
-
-    // Step 3: Recurring Subscription Discount (Standard Service Only)
     let discount = 0;
-    if (state.service === 'standard') {
-        const discountRate = FREQ_DISCOUNTS[state.freq] || 0;
-        discount = baseCost * discountRate;
+    let addonsSum = 0;
+    let hours = 0;
+
+    if (state.service === 'closet') {
+        baseCost = state.closetHours * 50;
+        hours = state.closetHours;
+        if (bathsRow) bathsRow.style.display = 'none';
+        if (addonsRow) addonsRow.style.display = 'none';
+    } else {
+        if (bathsRow) bathsRow.style.display = 'flex';
+        if (addonsRow) addonsRow.style.display = 'flex';
+
+        const cfg = PRICING_CONFIG[state.service] || PRICING_CONFIG.standard;
+        let rawCost = state.sqFt * cfg.rate;
+        baseCost = Math.max(rawCost, cfg.minFee);
+
+        if (state.service === 'airbnb') {
+            baseCost = 150;
+        }
+
+        if (state.service !== 'airbnb' && state.baths > 2) {
+            extraBathCost = (state.baths - 2) * 25;
+        }
+
+        if (state.service === 'standard') {
+            const discountRate = FREQ_DISCOUNTS[state.freq] || 0;
+            discount = baseCost * discountRate;
+        }
+
+        addonsSum = Object.values(state.addons).reduce((a, b) => a + b, 0);
+
+        hours = (state.sqFt / 500);
+        if (state.service === 'deep' || state.service === 'move') hours *= 1.4;
     }
 
-    // Step 4: Addons sum
-    let addonsSum = Object.values(state.addons).reduce((a, b) => a + b, 0);
-
-    // Step 5: Wife Care Package Surcharge (+ $35 auto included if active)
     let wifeCareFee = state.isWifeCareVip ? 35 : 0;
-
-    // Step 6: Total Calculation
     let finalTotal = (baseCost - discount) + extraBathCost + addonsSum + wifeCareFee;
+    
     state.calculatedTotal = Math.round(finalTotal);
-
-    // Step 7: Estimated Time calculation (Total SqFt / 500 hours per cleaner)
-    let hours = (state.sqFt / 500);
-    if (state.service === 'deep' || state.service === 'move') hours *= 1.4;
-    state.estimatedHours = hours.toFixed(1);
+    state.estimatedHours = parseFloat(hours).toFixed(1);
 
     // Update UI Elements
     const baseEl = document.getElementById('basePrice');
@@ -242,11 +305,29 @@ function recalc() {
     const totalEl = document.getElementById('totalPrice');
     const mobileTotalEl = document.getElementById('mobileTotal');
     const timeEl = document.getElementById('estimatedTime');
+    const vipRow = document.getElementById('vipSummaryRow');
+    const vipCardBox = document.getElementById('vipCardBox');
+    const openVipBtn = document.getElementById('openVipBtn');
+    const cancelVipBtn = document.getElementById('cancelVipBtn');
 
     if (baseEl) baseEl.innerText = '$' + Math.round(baseCost);
     if (bathsEl) bathsEl.innerText = '$' + extraBathCost;
-    if (addonsEl) addonsEl.innerText = '$' + (addonsSum + wifeCareFee);
+    if (addonsEl) addonsEl.innerText = '$' + addonsSum;
     if (timeEl) timeEl.innerText = `${state.estimatedHours} hrs`;
+
+    if (vipRow) {
+        if (state.isWifeCareVip) {
+            vipRow.style.display = 'flex';
+            if (vipCardBox) vipCardBox.classList.add('active-vip');
+            if (openVipBtn) openVipBtn.innerText = '✓ Wife Care Active (Click to Edit)';
+            if (cancelVipBtn) cancelVipBtn.style.display = 'block';
+        } else {
+            vipRow.style.display = 'none';
+            if (vipCardBox) vipCardBox.classList.remove('active-vip');
+            if (openVipBtn) openVipBtn.innerText = 'Customize Wife Care Package ->';
+            if (cancelVipBtn) cancelVipBtn.style.display = 'none';
+        }
+    }
 
     const discRow = document.getElementById('discountRow');
     if (discRow) {
@@ -282,7 +363,11 @@ function updateFormSummaryData() {
 
     const modalSummary = document.getElementById('modalBookingSummary');
     if (modalSummary) {
-        modalSummary.innerText = `Selected: ${state.service.toUpperCase()} (${state.sqFt} sq ft, ${state.baths} Bath) | Est. Time: ${state.estimatedHours} hrs | Total: $${state.calculatedTotal}${wifeCareTag} | [${paymentNoticeText}]`;
+        if (state.service === 'closet') {
+            modalSummary.innerText = `Selected: CLOSET ORGANIZATION (${state.closetHours} hrs) | Total: $${state.calculatedTotal}${wifeCareTag} | [${paymentNoticeText}]`;
+        } else {
+            modalSummary.innerText = `Selected: ${state.service.toUpperCase()} (${state.sqFt} sq ft, ${state.baths} Bath) | Est. Time: ${state.estimatedHours} hrs | Total: $${state.calculatedTotal}${wifeCareTag} | [${paymentNoticeText}]`;
+        }
     }
 }
 
@@ -293,6 +378,16 @@ function initModalEvents() {
 
     const vipBtn = document.getElementById('openVipBtn');
     if (vipBtn) vipBtn.addEventListener('click', () => openModal('vipModal'));
+
+    const cancelVipBtn = document.getElementById('cancelVipBtn');
+    if (cancelVipBtn) {
+        cancelVipBtn.addEventListener('click', () => {
+            state.isWifeCareVip = false;
+            recalc();
+            closeModal('vipModal');
+            alert('Wife Care Package has been removed from your booking.');
+        });
+    }
 
     document.querySelectorAll('.close-btn').forEach(btn => {
         btn.addEventListener('click', (e) => closeModal(e.target.dataset.modal));
@@ -329,9 +424,8 @@ function setupDemoFormSubmissions() {
             e.preventDefault();
             state.isWifeCareVip = true;
             recalc();
-            alert('Wife Care Package successfully enabled and added to your quote (+ $35 fee)! Proceed with standard booking.');
+            alert('Wife Care Package successfully activated and added to your quote (+ $35 fee)!');
             closeModal('vipModal');
-            vipForm.reset();
         });
     }
 }

@@ -7,9 +7,9 @@
     <title>Olena's House Cleaning Service | Treasure Valley, ID</title>
     
     <link rel="icon" type="image/png" href="logo.png">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=4.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="scripts.js" defer></script>
+    <script src="scripts.js?v=4.0" defer></script>
 </head>
 <body>
 
@@ -34,7 +34,7 @@
 
     <div class="container">
         
-        <!-- Services Select Cards Grid -->
+        <!-- Services Select Cards Grid (5 Cards Now!) -->
         <section class="services-select-section">
             <h2 class="section-title">Select Service</h2>
             
@@ -55,6 +55,10 @@
                     <i class="fas fa-house-user service-icon"></i>
                     <h3>Airbnb /<br>STR Service</h3>
                 </div>
+                <div class="service-select-card" data-service="closet">
+                    <i class="fas fa-tshirt service-icon"></i>
+                    <h3>Closet<br>Organization</h3>
+                </div>
             </div>
         </section>
 
@@ -72,12 +76,13 @@
                         <h3>Booking Summary</h3>
                         <hr style="margin: 12px 0; border: none; border-top: 1px solid rgba(27, 59, 82, 0.15);">
                         <div class="sum-line"><span>Base Rate:</span> <strong id="basePrice">$130</strong></div>
-                        <div class="sum-line"><span>Extra Baths:</span> <strong id="bathsPrice">$0</strong></div>
-                        <div class="sum-line"><span>Add-ons:</span> <strong id="addonsPrice">$0</strong></div>
+                        <div class="sum-line" id="bathsRow"><span>Extra Baths:</span> <strong id="bathsPrice">$0</strong></div>
+                        <div class="sum-line" id="addonsRow"><span>Add-ons:</span> <strong id="addonsPrice">$0</strong></div>
                         <div class="sum-line" id="discountRow" style="display:none; color: var(--accent-teal);"><span>Discount:</span> <strong id="discountPrice">-$0</strong></div>
+                        <div class="sum-line" id="vipSummaryRow" style="display:none; color: #b8860b;"><span>Wife Care VIP:</span> <strong>+$35</strong></div>
                         
                         <div class="time-estimate-box">
-                            <i class="fas fa-clock"></i> Est. Time: <strong id="estimatedTime">2.5 hrs</strong>
+                            <i class="fas fa-clock"></i> Est. Time: <strong id="estimatedTime">2.8 hrs</strong>
                         </div>
 
                         <div class="sum-total"><span>Total:</span> <strong id="totalPrice">$130</strong></div>
@@ -91,10 +96,10 @@
         </section>
 
         <!-- VIP Promo -->
-        <div class="vip-card">
+        <div class="vip-card" id="vipCardBox">
             <span class="vip-badge">VIP SUBSCRIPTION</span>
             <h3>🎁 Wife Care All-Inclusive Subscription</h3>
-            <p style="font-size: 0.9rem; margin-top: 5px;">A clean home, fresh flowers, and her favorite coffee automatically delivered on every clean (+ $35 care fee included).</p>
+            <p style="font-size: 0.9rem; margin-top: 5px;">A clean home, fresh flowers, and her favorite coffee automatically delivered on every clean (+ $35 care fee).</p>
             <button class="btn-vip" id="openVipBtn">Customize Wife Care Package &rarr;</button>
         </div>
 
@@ -213,7 +218,10 @@
                 <div class="field"><label>Favorite Coffee/Drink</label><input type="text" name="coffee_preference" placeholder="e.g. Iced Vanilla Latte" required></div>
                 <div class="field"><label>Preferred Flowers</label><select name="flower_preference"><option>Seasonal Fresh Mix</option><option>Roses</option><option>Sunflowers</option></select></div>
                 <div class="field"><label>Frequency</label><select name="frequency"><option>Bi-Weekly</option><option>Weekly</option></select></div>
-                <button class="btn-vip" style="width:100%;" type="submit">Enable Wife Care Subscription</button>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-vip" style="flex:1;" type="submit" id="applyVipBtn">Apply Wife Care Package</button>
+                    <button type="button" id="cancelVipBtn" style="background:#ccc; border:none; border-radius:20px; padding:10px 15px; font-weight:bold; cursor:pointer; display:none;">Cancel VIP</button>
+                </div>
             </form>
         </div>
     </div>
