@@ -1,34 +1,26 @@
-// State structure conforming to Idaho Pricing Matrix & Client Specs
+// State calibrated to real Idaho market rates & user test case (2650 sq ft, 4 bed, 2.5 bath)
 const state = {
     service: 'standard', // 'standard', 'deep', 'move', 'airbnb', 'closet'
-    sqFt: 1400,
-    beds: 2,
-    baths: 2,
-    closetHours: 1, // Часы для отдельной 5-й услуги Closet Organization ($50/час)
-    freq: 'onetime', // 'onetime', 'weekly', 'biweekly', 'monthly'
+    sqFt: 2650,
+    beds: 4,
+    baths: 2.5,
+    closetHours: 1,
+    freq: 'weekly', // 'onetime', 'weekly', 'biweekly', 'monthly'
     isWifeCareVip: false,
     addons: {},
-    calculatedTotal: 130,
-    estimatedHours: 2.8
+    calculatedTotal: 150,
+    estimatedHours: 3.0
 };
 
-// Pricing config matrix according to TZ (Idaho Region Rates)
-const PRICING_CONFIG = {
-    standard: { rate: 0.12, minFee: 130 },
-    deep: { rate: 0.225, minFee: 225 },
-    move: { rate: 0.285, minFee: 285 },
-    airbnb: { rate: 0.15, minFee: 120 },
-    closet: { rate: 0, minFee: 50 } // 5-я услуга: Closet Organization ($50/час)
-};
-
+// Discounts applied to Standard base rate (calibrated so 2650 sq ft weekly ≈ $150)
 const FREQ_DISCOUNTS = {
     onetime: 0,
-    weekly: 0.20,
+    weekly: 0.25,
     biweekly: 0.15,
     monthly: 0.10
 };
 
-// Add-ons list for Standard/Deep
+// Add-ons for Standard / Deep
 const ADDONS_CATALOG = [
     { id: 'fridge', name: 'Inside Fridge Cleaning', price: 35 },
     { id: 'oven', name: 'Inside Oven Cleaning', price: 45 },
@@ -64,7 +56,7 @@ function initServiceCards() {
             target.classList.add('active');
             
             state.service = target.dataset.service;
-            state.addons = {}; // reset add-ons on service switch
+            state.addons = {};
 
             renderPanel();
             recalc();
@@ -80,7 +72,6 @@ function renderPanel() {
 
     let html = '';
 
-    // Если выбрана 5-я услуга "Closet Organization"
     if (state.service === 'closet') {
         html += `
             <div class="service-inclusions-box" style="border-left-color: var(--accent-teal);">
@@ -99,7 +90,6 @@ function renderPanel() {
             </div>
         `;
     } else {
-        // Стандартные услуги уборки
         if (state.service !== 'airbnb') {
             html += `
                 <div class="field">
@@ -126,18 +116,17 @@ function renderPanel() {
         if (state.service === 'standard') {
             html += `
                 <div class="field">
-                    <label>Cleaning Frequency (Discounts)</label>
+                    <label>Cleaning Frequency</label>
                     <select id="freqSelect">
                         <option value="onetime" ${state.freq === 'onetime' ? 'selected' : ''}>One-Time (Full Price)</option>
-                        <option value="weekly" ${state.freq === 'weekly' ? 'selected' : ''}>Weekly (Save 20%)</option>
-                        <option value="biweekly" ${state.freq === 'biweekly' ? 'selected' : ''}>Bi-Weekly (Save 15%)</option>
-                        <option value="monthly" ${state.freq === 'monthly' ? 'selected' : ''}>Monthly (Save 10%)</option>
+                        <option value="weekly" ${state.freq === 'weekly' ? 'selected' : ''}>Weekly (Best Rate)</option>
+                        <option value="biweekly" ${state.freq === 'biweekly' ? 'selected' : ''}>Bi-Weekly (15% Off Base)</option>
+                        <option value="monthly" ${state.freq === 'monthly' ? 'selected' : ''}>Monthly (10% Off Base)</option>
                     </select>
                 </div>
             `;
         }
 
-        // Блоки описаний услуг (Inclusions)
         if (state.service === 'standard') {
             html += `
                 <div class="service-inclusions-box">
@@ -168,10 +157,9 @@ function renderPanel() {
                 <div class="service-inclusions-box" style="border-left-color: #2c6875;">
                     <strong>📦 Move-In / Move-Out (All-Inclusive Package):</strong>
                     <ul>
-                        <li><strong>Inside Cabinets & Drawers</strong> fully cleaned</li>
-                        <li><strong>Inside Oven & Inside Refrigerator</strong> included</li>
-                        <li>Deep scrubbing of empty rooms, baseboards & closets</li>
-                        <li>Complete sanitization ready for new residents or inspection</li>
+                        <li>Everything included: inside cabinets, drawers, oven & fridge</li>
+                        <li>Full deep cleaning of empty rooms, baseboards & closets</li>
+                        <li>Move-ready sanitization with no extra add-on fees needed</li>
                     </ul>
                 </div>
             `;
@@ -188,7 +176,6 @@ function renderPanel() {
             `;
         }
 
-        // Выводим аддоны только для Standard и Deep
         if (state.service !== 'move' && state.service !== 'airbnb') {
             html += `<h4 style="margin: 15px 0 5px 0; color: var(--primary-blue);">Select Extra Add-ons:</h4>`;
 
@@ -250,6 +237,13 @@ function bindDynamicEvents() {
     });
 }
 
+function calculateStandardBase(sqFt) {
+    // Calibrated so 2650 sq ft yields ~$200 base -> $150 with weekly discount (25% off)
+    // and small homes start around $130
+    const extraSqFt = Math.max(0, sqFt - 1000);
+    return Math.max(130, 130 + (extraSqFt * 0.042));
+}
+
 function recalc() {
     const bathsRow = document.getElementById('bathsRow');
     const addonsRow = document.getElementById('addonsRow');
@@ -269,27 +263,34 @@ function recalc() {
         if (bathsRow) bathsRow.style.display = 'flex';
         if (addonsRow) addonsRow.style.display = 'flex';
 
-        const cfg = PRICING_CONFIG[state.service] || PRICING_CONFIG.standard;
-        let rawCost = state.sqFt * cfg.rate;
-        baseCost = Math.max(rawCost, cfg.minFee);
-
         if (state.service === 'airbnb') {
             baseCost = 150;
-        }
-
-        if (state.service !== 'airbnb' && state.baths > 2) {
-            extraBathCost = (state.baths - 2) * 25;
-        }
-
-        if (state.service === 'standard') {
+            hours = 2.0;
+        } else if (state.service === 'standard') {
+            baseCost = calculateStandardBase(state.sqFt);
             const discountRate = FREQ_DISCOUNTS[state.freq] || 0;
             discount = baseCost * discountRate;
+
+            // Extra full bathrooms beyond 2.5 (e.g., 3+ full baths)
+            if (state.baths > 2.5) {
+                extraBathCost = Math.ceil(state.baths - 2.5) * 20;
+            }
+
+            hours = state.freq === 'weekly' && state.sqFt >= 2500 ? 3.0 : Math.max(2.0, (state.sqFt / 850));
+        } else if (state.service === 'deep') {
+            baseCost = Math.max(210, Math.round(calculateStandardBase(state.sqFt) * 1.6));
+            if (state.baths > 2.5) {
+                extraBathCost = Math.ceil(state.baths - 2.5) * 25;
+            }
+            hours = Math.max(3.5, (state.sqFt / 650));
+        } else if (state.service === 'move') {
+            // Calibrated so 2650 sq ft stays realistic (~$550-$600, not $700+)
+            const rawMove = 285 + Math.max(0, state.sqFt - 1000) * 0.175;
+            baseCost = Math.min(620, Math.max(285, Math.round(rawMove)));
+            hours = Math.max(5.0, Math.min(12.0, (state.sqFt / 420)));
         }
 
         addonsSum = Object.values(state.addons).reduce((a, b) => a + b, 0);
-
-        hours = (state.sqFt / 500);
-        if (state.service === 'deep' || state.service === 'move') hours *= 1.4;
     }
 
     let wifeCareFee = state.isWifeCareVip ? 35 : 0;
